@@ -1,0 +1,12 @@
+.venv/
+data/
+exports/
+.agent-work/
+.verification/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.env*
+tmp/
+

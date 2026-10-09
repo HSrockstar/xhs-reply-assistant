@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>回声 · 个人回复助手</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <a class="brand" href="#" aria-label="回声首页">
+        <span class="brand-mark" aria-hidden="true">回</span>
+        <span><strong>回声</strong><small>个人回复助手</small></span>
+      </a>
+      <nav class="primary-nav">
+        <button class="nav-link active" type="button" data-page="workbench"><span class="nav-icon" aria-hidden="true">✦</span><span>回复工作台</span></button>
+        <button class="nav-link" type="button" data-page="library"><span class="nav-icon" aria-hidden="true">▤</span><span>Q&amp;A 资料库</span></button>
+        <button class="nav-link" type="button" data-page="style"><span class="nav-icon" aria-hidden="true">◌</span><span>风格设置</span></button>
+        <button class="nav-link" type="button" data-page="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span>模型设置</span></button>
+      </nav>
+      <div class="sidebar-note">
+        <span class="status-dot" aria-hidden="true"></span>
+        <div><strong>本机工作空间</strong><small>资料仅由你主动调用</small></div>
+      </div>
+    </aside>
+
+    <div class="workspace">
+      <header class="topbar">
+        <div class="page-heading">
+          <p class="eyebrow">PRIVATE WRITING SPACE</p>
+          <h1 id="page-title">回复工作台</h1>
+        </div>
+        <div class="topbar-controls">
+          <label class="compact-field">
+            <span>本次模型</span>
+            <select id="provider-select" aria-label="选择本次模型入口">
+              <option value="codex">Codex</option>
+              <option value="deepseek">DeepSeek</option>
+            </select>
+          </label>
+          <label class="compact-field key-field">
+            <span>临时密钥 <small>只用于本次提交</small></span>
+            <input id="provider-key" type="password" autocomplete="off" spellcheck="false" placeholder="可留空，使用已配置入口">
+          </label>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="page-section" data-section="workbench">
+          <div class="intro-row">
+            <div>
+              <p class="eyebrow">WRITE WITH YOUR OWN VOICE</p>
+              <h2>先把想回应的内容放在这里</h2>
+              <p class="muted">历史示例和风格画像只作为参考；每次生成都会保留独立任务，方便回看与修改。</p>
+            </div>
+            <div class="soft-badge"><span class="status-dot"></span><span id="active-profile-state">正在读取资料状态</span></div>
+          </div>
+
+          <div class="workbench-grid">
+            <div class="main-column">
+              <section class="card composer-card">
+                <div class="card-heading">
+                  <div><span class="step-number">01</span><h3>这次要回复什么？</h3></div>
+                  <span class="quiet-label">草稿会在本页签内保留</span>
+                </div>
+                <label class="field-label" for="question-input">对方的问题或评论</label>
+                <textarea id="question-input" class="large-input" rows="5" placeholder="粘贴需要回复的原文…"></textarea>
+
+                <div class="form-grid two-columns">
+                  <label class="field-label">必要背景或前文
+                    <textarea id="background-input" rows="3" placeholder="可补充关系、前文和需要遵守的事实"></textarea>
+                  </label>
+                  <label class="field-label">这次的特别要求
+                    <textarea id="instructions-input" rows="3" placeholder="例如：简短一点；不要使用亲昵称呼"></textarea>
+                  </label>
+                </div>
+                <div class="form-grid three-columns compact-grid">
+                  <label class="field-label">回复长度
+                    <select id="length-input">
+                      <option value="auto">自然即可</option>
+                      <option value="short">简短</option>
+                      <option value="medium">适中</option>
+                      <option value="long">详细</option>
+                    </select>
+                  </label>
+                  <label class="field-label">适用场景
+                    <select id="scene-input">
+                      <option value="">未指定</option>
+                      <option value="感谢">感谢</option>
+                      <option value="答疑">答疑</option>
+                      <option value="交流">交流</option>
+                      <option value="祝福">祝福</option>
+                      <option value="澄清">澄清</option>
+                    </select>
+                  </label>
+                  <div class="field-label mode-field"><span>生成依据</span>
+                    <div class="segmented-control" role="group" aria-label="生成依据">
+                      <button type="button" class="mode-button active" data-mode="full">完整</button>
+                      <button type="button" class="mode-button" data-mode="style">风格</button>
+                      <button type="button" class="mode-button" data-mode="base">基础</button>
+                    </div>
+                  </div>
+                </div>
+                <div id="capability-note" class="inline-note" role="status"></div>
+                <div class="action-row">
+                  <button id="generate-button" type="button" class="button button-primary"><span aria-hidden="true">✦</span> 生成回复</button>
+                  <button id="preview-retrieval-button" type="button" class="button button-secondary">先看参考内容</button>
+                  <span class="muted tiny">失败时不会自动切换模型入口</span>
+                </div>
+              </section>
+
+              <section id="retrieval-panel" class="card retrieval-panel" hidden>
+                <div class="card-heading"><div><span class="step-number">↳</span><h3>检索预览</h3></div><button type="button" class="icon-button" data-close="retrieval-panel" aria-label="关闭检索预览">×</button></div>
+                <div id="retrieval-content" class="stack"></div>
+              </section>
+
+              <section class="card result-card">
+                <div class="card-heading">
+                  <div><span class="step-number">02</span><h3>生成任务与最终稿</h3></div>
+                  <button id="refresh-jobs-button" type="button" class="text-button">刷新任务</button>
+                </div>
+                <div class="job-layout">
+                  <div>
+                    <div id="job-list" class="job-list"><p class="muted empty-state">还没有生成任务。</p></div>
+                  </div>
+                  <div id="job-detail" class="job-detail">
+                    <div class="empty-state"><span class="empty-orbit" aria-hidden="true">✦</span><p>选择一个任务查看进度和回复草稿。</p></div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-heading">
+                  <div><span class="step-number">03</span><h3>已保存的最终稿</h3></div>
+                  <button id="refresh-feedback-button" type="button" class="text-button">刷新</button>
+                </div>
+                <div id="feedback-list" class="feedback-list"><p class="muted empty-state">最终稿由你主动保存。</p></div>
+                <div class="action-row footer-actions">
+                  <a class="button button-secondary" href="/api/exports/finals" download>导出最终稿</a>
+                  <span class="muted tiny">保存稿件与采用为示例是两个独立动作。</span>
+                </div>
+              </section>
+            </div>
+
+            <aside class="side-column">
+              <section class="card side-card">
+                <div class="card-heading"><div><span class="step-number">i</span><h3>当前可用参考</h3></div></div>
+                <div id="workbench-runtime" class="runtime-summary"><p class="muted">正在读取…</p></div>
+                <button type="button" class="text-button" data-navigate="settings">查看模型与检索状态 <span aria-hidden="true">→</span></button>
+              </section>
+              <section class="card side-card">
+                <div class="side-illustration" aria-hidden="true"><span>“</span><i></i><i></i></div>
+                <h3>把选择留给自己</h3>
+                <p class="muted">助手提供一个可编辑的起点。内容是否准确、是否发送，由你决定。</p>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section class="page-section" data-section="library" hidden>
+          <div class="intro-row">
+            <div><p class="eyebrow">YOUR REFERENCE LIBRARY</p><h2>Q&amp;A 资料库</h2><p class="muted">先预览文件，再决定是否导入。原始消息会按文本展示。</p></div>
+          </div>
+          <div class="library-grid">
+            <div class="main-column">
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">01</span><h3>导入 Q&amp;A 文件</h3></div><span class="quiet-label">JSON</span></div>
+                <div class="upload-row">
+                  <label class="file-picker">选择文件<input id="import-file" type="file" accept=".json,application/json"></label>
+                  <span id="selected-file-name" class="muted">尚未选择文件</span>
+                  <button id="preview-import-button" class="button button-primary" type="button">预览导入</button>
+                </div>
+                <div id="import-preview" class="import-preview" hidden></div>
+              </section>
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">02</span><h3>示例列表</h3></div><button id="refresh-examples-button" type="button" class="text-button">刷新列表</button></div>
+                <div class="filter-row">
+                  <label class="field-label">按状态筛选
+                    <select id="example-status-filter">
+                      <option value="">全部状态</option>
+                      <option value="ready">可用</option>
+                      <option value="needs_review">待整理</option>
+                      <option value="excluded">已排除</option>
+                    </select>
+                  </label>
+                  <span id="example-count" class="muted tiny"></span>
+                </div>
+                <div id="example-list" class="example-list"><p class="muted empty-state">正在读取示例…</p></div>
+                <div class="pagination-row"><button id="examples-prev" class="button button-quiet" type="button">上一页</button><span id="examples-page" class="muted tiny">第 1 页</span><button id="examples-next" class="button button-quiet" type="button">下一页</button></div>
+              </section>
+            </div>
+            <section class="card example-detail-card">
+              <div class="card-heading"><div><span class="step-number">03</span><h3>原文与示例编辑</h3></div><span id="example-version" class="quiet-label"></span></div>
+              <div id="example-detail" class="example-detail"><div class="empty-state"><span class="empty-orbit" aria-hidden="true">▤</span><p>选择一个示例查看原文和整理状态。</p></div></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page-section" data-section="style" hidden>
+          <div class="intro-row">
+            <div><p class="eyebrow">A PROFILE YOU CAN EDIT</p><h2>风格设置</h2><p class="muted">画像规则保留来源、场景和反例；你可以逐条调整后另存版本。</p></div>
+            <button id="extract-style-button" type="button" class="button button-primary">开始两轮提取</button>
+          </div>
+          <div id="style-alerts" class="stack"></div>
+          <div class="style-layout">
+            <div class="main-column">
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">01</span><h3>画像与分析</h3></div><span id="style-version-label" class="soft-badge">未加载</span></div>
+                <div class="analysis-grid">
+                  <article class="analysis-card"><h4>回复策略</h4><div id="style-strategy" class="prose-block muted">尚无策略摘要。</div></article>
+                  <article class="analysis-card"><h4>表达观察</h4><div id="style-expression" class="prose-block muted">尚无表达摘要。</div></article>
+                  <article class="analysis-card"><h4>待核实与缺口</h4><div id="style-gaps" class="prose-block muted">暂无记录。</div></article>
+                  <article class="analysis-card"><h4>样本统计</h4><div id="style-statistics" class="prose-block muted">尚无统计。</div></article>
+                </div>
+                <div class="field-label prompt-field"><span>当前编译提示词</span><textarea id="style-prompt" rows="5" readonly placeholder="保存画像后，编译后的提示词会显示在这里。"></textarea></div>
+              </section>
+
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">02</span><h3>可编辑规则</h3></div><button id="add-rule-button" class="button button-quiet" type="button">＋ 添加规则</button></div>
+                <p class="muted tiny">证据和反例 ID 可点击回到对应示例；添加的个人偏好会标记为“用户设定”。</p>
+                <div id="style-rules" class="rules-list"><p class="muted empty-state">暂无规则。</p></div>
+                <div class="save-style-row">
+                  <label class="check-label"><input id="activate-style-checkbox" type="checkbox" checked> 保存后设为启用版本</label>
+                  <button id="save-style-button" class="button button-primary" type="button">保存新版本</button>
+                </div>
+              </section>
+            </div>
+            <aside class="side-column">
+              <section class="card side-card"><div class="card-heading"><div><span class="step-number">↻</span><h3>版本记录</h3></div></div><div id="style-versions" class="version-list"><p class="muted">正在读取版本…</p></div><div id="style-comparison" class="stack" hidden></div></section>
+              <section class="card side-card"><div class="card-heading"><div><span class="step-number">!</span><h3>需要确认时继续</h3></div></div><p class="muted">若两轮分析中断，可以在任务状态和输入快照允许时继续第二阶段。失败不会替换当前画像。</p><div id="style-job-actions" class="stack"></div></section>
+            </aside>
+          </div>
+        </section>
+
+        <section class="page-section" data-section="settings" hidden>
+          <div class="intro-row"><div><p class="eyebrow">LOCAL MODEL &amp; INDEX</p><h2>模型设置</h2><p class="muted">默认使用 Codex。每次任务的入口由你选择，失败后不会自动改用另一家模型。</p></div></div>
+          <div class="settings-grid">
+            <div class="main-column">
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">01</span><h3>模型状态</h3></div><button id="refresh-providers-button" type="button" class="text-button">重新检测</button></div>
+                <div id="provider-status" class="provider-grid"><p class="muted">正在读取入口状态…</p></div>
+                <div class="test-row"><button id="test-provider-button" class="button button-secondary" type="button">测试当前入口</button><span id="provider-test-status" class="muted tiny"></span></div>
+              </section>
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">02</span><h3>非敏感设置</h3></div><button id="restore-settings-button" type="button" class="text-button danger-text">恢复默认值</button></div>
+                <div class="form-grid two-columns settings-form">
+                  <label class="field-label">默认模型入口<select id="setting-provider"><option value="codex">Codex</option><option value="deepseek">DeepSeek</option></select></label>
+                  <label class="field-label">Codex 模型<input id="setting-codex-model" type="text" spellcheck="false"></label>
+                  <label class="field-label">Codex 推理强度<select id="setting-codex-reasoning"><option value="low">low</option><option value="medium">medium</option><option value="high">high</option><option value="xhigh">xhigh</option></select></label>
+                  <label class="field-label">DeepSeek 模型<input id="setting-deepseek-model" type="text" spellcheck="false"></label>
+                  <label class="field-label">Codex 超时（秒）<input id="setting-codex-timeout" type="number" min="10" max="900" value="240"></label>
+                  <label class="field-label">DeepSeek 超时（秒）<input id="setting-deepseek-timeout" type="number" min="10" max="900" value="180"></label>
+                  <label class="field-label full-width">已确认的背景<textarea id="setting-background" rows="3" placeholder="可保存为以后使用的背景信息"></textarea></label>
+                  <label class="field-label full-width">个人回复偏好<textarea id="setting-preferences" rows="3" placeholder="例如：语气自然，避免过度热情"></textarea></label>
+                </div>
+                <div class="action-row"><button id="save-settings-button" type="button" class="button button-primary">保存设置</button><span id="settings-saved-state" class="muted tiny"></span></div>
+              </section>
+              <section class="card">
+                <div class="card-heading"><div><span class="step-number">03</span><h3>检索与运行设备</h3></div><button id="refresh-runtime-button" type="button" class="text-button">刷新状态</button></div>
+                <div id="retrieval-runtime" class="diagnostics"><p class="muted">正在读取设备与索引状态…</p></div>
+                <div class="action-row"><button id="rebuild-index-button" type="button" class="button button-secondary">重建检索索引</button><span class="muted tiny">重建会作为后台任务显示在任务列表中。</span></div>
+              </section>
+            </div>
+            <aside class="side-column">
+              <section class="card side-card">
+                <div class="card-heading"><div><span class="step-number">↗</span><h3>备份与恢复</h3></div></div>
+                <p class="muted">备份包括本地资料和非敏感设置，不包含模型密钥。</p>
+                <button id="create-backup-button" type="button" class="button button-secondary full-button">下载备份</button>
+                <hr>
+                <label class="field-label">选择备份文件<input id="restore-file" type="file" accept=".zip,application/zip,application/octet-stream"></label>
+                <button id="restore-backup-button" type="button" class="button button-danger full-button">恢复备份…</button>
+                <p class="tiny muted">恢复前会确认危险操作，服务会先保留当前自动备份。</p>
+              </section>
+              <section class="card side-card"><h3>隐私提示</h3><p class="muted">临时密钥只保存在当前页面内存，请求提交后会清空。非敏感设置只在你点击“保存设置”后写入。</p></section>
+            </aside>
+          </div>
+        </section>
+      </main>
+      <footer class="app-footer"><span>回声 · 个人回复助手</span><span>先参考，再决定</span></footer>
+    </div>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
