@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, create_model, model_validator
 
 
 class StrictModel(BaseModel):
@@ -81,6 +81,50 @@ class Expression(StrictModel):
     dimensions: list[Observation]
     cross_checks: list[str]
     gaps: list[str]
+
+
+class ObservationSelection(StrictModel):
+    description: str
+    applicable_scenes: list[str]
+    evidence_ids: list[str] = Field(min_length=1)
+
+
+class StrategySelection(Strategy):
+    observations: list[ObservationSelection]
+    content_candidates: list[ObservationSelection]
+    contradictions: list[ObservationSelection]
+
+
+class ExpressionSelection(Expression):
+    dimensions: list[ObservationSelection]
+
+
+def selection_schema(schema, example_ids):
+    """将本批依据 ID 写入结构化输出枚举，避免模型抄写长 ID 时出错。"""
+    reference = Literal[tuple(example_ids)]
+    observation = create_model(
+        "ObservationSelection",
+        __base__=ObservationSelection,
+        evidence_ids=(list[reference], Field(min_length=1)),
+    )
+    if schema is StrategySelection:
+        return create_model(
+            "StrategySelection",
+            __base__=StrategySelection,
+            **{field: (list[observation], ...) for field in ("observations", "content_candidates", "contradictions")},
+        )
+    rule = create_model(
+        "RuleSelection",
+        __base__=Rule,
+        evidence_ids=(list[reference], Field(min_length=1)),
+        counterexample_ids=(list[reference], ...),
+    )
+    return create_model(
+        "ExpressionSelection",
+        __base__=ExpressionSelection,
+        dimensions=(list[observation], ...),
+        rules=(list[rule], ...),
+    )
 
 
 class OrganizeUnit(StrictModel):

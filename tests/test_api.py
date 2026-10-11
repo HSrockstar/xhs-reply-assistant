@@ -60,7 +60,7 @@ def test_two_pass_style_snapshot_activation_and_resume(client):
     done = finished(client, resumed)
     assert done["status"] == "succeeded", done
     calls = client.provider.calls
-    assert [c[2] for c in calls] == ["Strategy", "Expression", "Expression"]
+    assert [c[2] for c in calls] == ["StrategySelection", "ExpressionSelection", "ExpressionSelection"]
     assert calls[0][1]["samples"] == calls[2][1]["samples"]
     assert calls[2][1]["strategy"] == failed["checkpoint"]["strategy"]
     profile = done["result"]

@@ -94,7 +94,7 @@ class FakeProvider(Provider):
                 "clarification_needed": False,
                 "review_notes": [],
             }, None
-        if schema.__name__ in {"Strategy", "Expression"}:
+        if schema.__name__ in {"Strategy", "Expression", "StrategySelection", "ExpressionSelection"}:
             sample = payload["samples"][0]
             observation = {
                 "description": "先回应，再提供步骤",
@@ -102,7 +102,9 @@ class FakeProvider(Provider):
                 "evidence_ids": [sample["id"]],
                 "evidence": [{"example_id": sample["id"], "quote": sample["answer_text"]}],
             }
-            if schema.__name__ == "Strategy":
+            if schema.__name__.endswith("Selection"):
+                observation.pop("evidence")
+            if schema.__name__.startswith("Strategy"):
                 return {
                     "observations": [observation],
                     "content_candidates": [],
