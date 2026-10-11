@@ -4,6 +4,12 @@
   const $ = (selector, root) => (root || document).querySelector(selector);
   const $$ = (selector, root) => Array.from((root || document).querySelectorAll(selector));
   const pageNames = { workbench: "回复工作台", library: "Q&A 资料库", style: "风格设置", settings: "模型设置" };
+  const pageDescriptions = {
+    workbench: "参考历史回复与风格画像，写出更贴近自己语气的回复草稿。",
+    library: "保存完整对话，让历史回复成为内容与风格的参考。",
+    style: "分析回复策略与表达习惯，建立可编辑、可追溯的风格画像。",
+    settings: "配置模型入口与检索设备，管理本地工作空间。"
+  };
   const state = {
     page: "workbench", mode: "full", settings: {}, providers: {}, runtime: {}, style: null,
     styleProfile: null, styleRules: [], styleDraftResult: null, examples: [], examplesTotal: 0,
@@ -106,15 +112,24 @@
   }
   function setMode(mode, save) {
     state.mode = mode;
-    for (const button of $$(".mode-button")) button.classList.toggle("active", button.dataset.mode === mode);
+    for (const button of $$(".mode-button")) {
+      button.classList.toggle("active", button.dataset.mode === mode);
+      button.setAttribute("aria-pressed", String(button.dataset.mode === mode));
+    }
     if (save !== false) saveSessionDraft();
   }
   function navigate(page) {
     if (!pageNames[page]) return;
     state.page = page;
     for (const section of $$(".page-section")) section.hidden = section.dataset.section !== page;
-    for (const button of $$(".nav-link")) button.classList.toggle("active", button.dataset.page === page);
+    for (const button of $$(".nav-link")) {
+      button.classList.toggle("active", button.dataset.page === page);
+      if (button.dataset.page === page) button.setAttribute("aria-current", "page");
+      else button.removeAttribute("aria-current");
+    }
     setText("page-title", pageNames[page]);
+    setText("page-breadcrumb", pageNames[page]);
+    setText("page-description", pageDescriptions[page]);
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (page === "library" && !state.examples.length) loadExamples(false);
     if (page === "style" && !state.style) loadStyle(false);

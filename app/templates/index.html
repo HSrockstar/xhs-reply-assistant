@@ -10,20 +10,31 @@
   <script src="/static/app.js" defer></script>
 </head>
 <body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="icon-chat" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 1-8 8H4l-2 3V11a9 9 0 0 1 18 0ZM7 10h8M7 14h5"/></symbol>
+    <symbol id="icon-library" viewBox="0 0 24 24"><path d="M4 4h6v16H4zM10 4h6v16h-6zM16 5l4-1 3 15-4 1zM6 8h2M12 8h2"/></symbol>
+    <symbol id="icon-style" viewBox="0 0 24 24"><path d="m14 4 6 6M4 20l5-1L21 7l-4-4L5 15zM4 20h16"/></symbol>
+    <symbol id="icon-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16M8 4v6M16 14v6"/><circle cx="8" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+    <symbol id="icon-spark" viewBox="0 0 24 24"><path d="m12 3 2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z"/></symbol>
+  </svg>
+  <header class="app-header">
+    <a class="brand" href="#" data-navigate="workbench" aria-label="回声首页">
+      <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#icon-chat"/></svg></span>
+      <span class="brand-copy"><strong>回声 · 个人回复助手</strong><small>用自己的语气，回应每一次交流</small></span>
+    </a>
+    <span class="workspace-tag"><span class="local-mark" aria-hidden="true"></span>本地工作空间</span>
+  </header>
   <div class="app-shell">
     <aside class="sidebar" aria-label="主导航">
-      <a class="brand" href="#" aria-label="回声首页">
-        <span class="brand-mark" aria-hidden="true">回</span>
-        <span><strong>回声</strong><small>个人回复助手</small></span>
-      </a>
+      <p class="nav-label">工作空间</p>
       <nav class="primary-nav">
-        <button class="nav-link active" type="button" data-page="workbench"><span class="nav-icon" aria-hidden="true">✦</span><span>回复工作台</span></button>
-        <button class="nav-link" type="button" data-page="library"><span class="nav-icon" aria-hidden="true">▤</span><span>Q&amp;A 资料库</span></button>
-        <button class="nav-link" type="button" data-page="style"><span class="nav-icon" aria-hidden="true">◌</span><span>风格设置</span></button>
-        <button class="nav-link" type="button" data-page="settings"><span class="nav-icon" aria-hidden="true">⚙</span><span>模型设置</span></button>
+        <button class="nav-link active" type="button" data-page="workbench" aria-current="page"><svg class="icon" aria-hidden="true"><use href="#icon-chat"/></svg><span>回复工作台</span></button>
+        <button class="nav-link" type="button" data-page="library"><svg class="icon" aria-hidden="true"><use href="#icon-library"/></svg><span>Q&amp;A 资料库</span></button>
+        <button class="nav-link" type="button" data-page="style"><svg class="icon" aria-hidden="true"><use href="#icon-style"/></svg><span>风格设置</span></button>
+        <button class="nav-link" type="button" data-page="settings"><svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg><span>模型设置</span></button>
       </nav>
       <div class="sidebar-note">
-        <span class="status-dot" aria-hidden="true"></span>
+        <span class="local-mark" aria-hidden="true"></span>
         <div><strong>本机工作空间</strong><small>资料仅由你主动调用</small></div>
       </div>
     </aside>
@@ -31,9 +42,15 @@
     <div class="workspace">
       <header class="topbar">
         <div class="page-heading">
-          <p class="eyebrow">PRIVATE WRITING SPACE</p>
+          <p class="eyebrow">工作空间 <span>/</span> <span id="page-breadcrumb">回复工作台</span></p>
           <h1 id="page-title">回复工作台</h1>
+          <p id="page-description" class="subtitle">参考历史回复与风格画像，写出更贴近自己语气的回复草稿。</p>
         </div>
+      </header>
+
+      <main class="content">
+        <section class="model-toolbar" aria-label="本次模型配置">
+          <div class="toolbar-heading"><span class="section-icon"><svg class="icon" aria-hidden="true"><use href="#icon-settings"/></svg></span><div><h2>本次使用的模型</h2><p>为回复生成、示例整理和风格提取选择入口</p></div></div>
         <div class="topbar-controls">
           <label class="compact-field">
             <span>本次模型</span>
@@ -47,15 +64,12 @@
             <input id="provider-key" type="password" autocomplete="off" spellcheck="false" placeholder="可留空，使用已配置入口">
           </label>
         </div>
-      </header>
-
-      <main class="content">
+        </section>
         <section class="page-section" data-section="workbench">
           <div class="intro-row">
             <div>
-              <p class="eyebrow">WRITE WITH YOUR OWN VOICE</p>
-              <h2>先把想回应的内容放在这里</h2>
-              <p class="muted">历史示例和风格画像只作为参考；每次生成都会保留独立任务，方便回看与修改。</p>
+              <h2>从一条评论开始</h2>
+              <p class="muted">输入原文，补充背景，再生成可编辑的回复。</p>
             </div>
             <div class="soft-badge"><span class="status-dot"></span><span id="active-profile-state">正在读取资料状态</span></div>
           </div>
@@ -65,7 +79,7 @@
               <section class="card composer-card">
                 <div class="card-heading">
                   <div><span class="step-number">01</span><h3>这次要回复什么？</h3></div>
-                  <span class="quiet-label">草稿会在本页签内保留</span>
+                  <span class="quiet-label">本页签自动保留草稿</span>
                 </div>
                 <label class="field-label" for="question-input">对方的问题或评论</label>
                 <textarea id="question-input" class="large-input" rows="5" placeholder="粘贴需要回复的原文…"></textarea>
@@ -99,15 +113,15 @@
                   </label>
                   <div class="field-label mode-field"><span>生成依据</span>
                     <div class="segmented-control" role="group" aria-label="生成依据">
-                      <button type="button" class="mode-button active" data-mode="full">完整</button>
-                      <button type="button" class="mode-button" data-mode="style">风格</button>
-                      <button type="button" class="mode-button" data-mode="base">基础</button>
+                      <button type="button" class="mode-button active" data-mode="full" aria-pressed="true">完整</button>
+                      <button type="button" class="mode-button" data-mode="style" aria-pressed="false">风格</button>
+                      <button type="button" class="mode-button" data-mode="base" aria-pressed="false">基础</button>
                     </div>
                   </div>
                 </div>
                 <div id="capability-note" class="inline-note" role="status"></div>
                 <div class="action-row">
-                  <button id="generate-button" type="button" class="button button-primary"><span aria-hidden="true">✦</span> 生成回复</button>
+                  <button id="generate-button" type="button" class="button button-primary"><svg class="icon" aria-hidden="true"><use href="#icon-spark"/></svg>生成回复</button>
                   <button id="preview-retrieval-button" type="button" class="button button-secondary">先看参考内容</button>
                   <span class="muted tiny">失败时不会自动切换模型入口</span>
                 </div>
@@ -153,9 +167,8 @@
                 <button type="button" class="text-button" data-navigate="settings">查看模型与检索状态 <span aria-hidden="true">→</span></button>
               </section>
               <section class="card side-card">
-                <div class="side-illustration" aria-hidden="true"><span>“</span><i></i><i></i></div>
-                <h3>把选择留给自己</h3>
-                <p class="muted">助手提供一个可编辑的起点。内容是否准确、是否发送，由你决定。</p>
+                <h3>一条回复的三个步骤</h3>
+                <ol class="workflow-steps"><li><strong>输入问题</strong><span>补充前文与特别要求</span></li><li><strong>生成草稿</strong><span>结合内容参考与表达习惯</span></li><li><strong>编辑并保存</strong><span>确认内容，再决定是否发送</span></li></ol>
               </section>
             </aside>
           </div>
@@ -163,7 +176,7 @@
 
         <section class="page-section" data-section="library" hidden>
           <div class="intro-row">
-            <div><p class="eyebrow">YOUR REFERENCE LIBRARY</p><h2>Q&amp;A 资料库</h2><p class="muted">先预览文件，再决定是否导入。原始消息会按文本展示。</p></div>
+            <div><h2>从历史回复积累参考</h2><p class="muted">导入 Q&amp;A 合集，查看原文并整理可用示例。</p></div>
           </div>
           <div class="library-grid">
             <div class="main-column">
@@ -202,7 +215,7 @@
 
         <section class="page-section" data-section="style" hidden>
           <div class="intro-row">
-            <div><p class="eyebrow">A PROFILE YOU CAN EDIT</p><h2>风格设置</h2><p class="muted">画像规则保留来源、场景和反例；你可以逐条调整后另存版本。</p></div>
+            <div><h2>让表达更接近你的习惯</h2><p class="muted">从历史回复提取风格，逐条调整规则并保存版本。</p></div>
             <button id="extract-style-button" type="button" class="button button-primary">开始两轮提取</button>
           </div>
           <div id="style-alerts" class="stack"></div>
@@ -237,7 +250,7 @@
         </section>
 
         <section class="page-section" data-section="settings" hidden>
-          <div class="intro-row"><div><p class="eyebrow">LOCAL MODEL &amp; INDEX</p><h2>模型设置</h2><p class="muted">默认使用 Codex。每次任务的入口由你选择，失败后不会自动改用另一家模型。</p></div></div>
+          <div class="intro-row"><div><h2>管理模型与本地检索</h2><p class="muted">查看模型状态、调整默认设置，以及备份本地资料。</p></div></div>
           <div class="settings-grid">
             <div class="main-column">
               <section class="card">
